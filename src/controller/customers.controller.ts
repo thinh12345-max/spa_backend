@@ -25,6 +25,8 @@ export class CustomersController {
     console.log('CustomersController loaded');
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   async create(@Body() createCustomerDto: CreateCustomerDto) {
     return this.customersService.create(createCustomerDto);
@@ -58,16 +60,22 @@ export class CustomersController {
     return this.customersService.update(Number(req.user.sub), updateCustomerDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get()
   async findAll() {
     return this.customersService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: string) {
     return this.customersService.findOne(Number(id));
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: string,
@@ -76,6 +84,8 @@ export class CustomersController {
     return this.customersService.update(Number(id), updateCustomerDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: string) {
     return this.customersService.remove(Number(id));
