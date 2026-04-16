@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   Req,
+  ForbiddenException,
+  NotFoundException,
   Query,
 } from '@nestjs/common';
 import { AppointmentsService } from '../service/appointments.service';
@@ -32,9 +34,9 @@ export class AppointmentsController {
   // CUSTOMER - TẠO LỊCH HẸN
   // =========================
   @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('customer')
-@Post()
-async create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req) {
+  @Roles('customer')
+  @Post()
+  async create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req: any) {
   const dto: CreateAppointmentDto = {
     ...createAppointmentDto,
     customer_id: req.user.sub,
@@ -75,7 +77,7 @@ async create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req) {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('customer')
   @Get('my')
-  findMy(@Req() req) {
+  findMy(@Req() req: any) {
     return this.appointmentsService.findByCustomer(req.user.sub);
   }
 
@@ -93,7 +95,12 @@ async create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req) {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('staff', 'admin')
   @Get()
-  findAll() {
+  async findAll(@Req() req: any) {
+    // Nếu là staff, chỉ trả về appointments của chính mình
+    if (req.user.role === 'staff') {
+      return this.appointmentsService.getStaffAppointments(req.user.userId);
+    }
+    // Admin xem tất cả
     return this.appointmentsService.findAll();
   }
 
@@ -101,22 +108,45 @@ async create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req) {
   // ADMIN / STAFF - XEM CHI TIẾT
   // =========================
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles( 'staff')
+  @Roles( 'staff', 'admin')
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.appointmentsService.findOne(+id);
+  async findOne(@Param('id') id: string, @Req() req: any) {
+    const appointment = await this.appointmentsService.findOne(+id);
+
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    // Kiểm tra quyền: staff chỉ xem được appointment của mình
+    if (req.user.role === 'staff' && appointment.staff?.id !== req.user.userId) {
+      throw new ForbiddenException('You can only view your own appointments');
+    }
+
+    return appointment;
   }
 
   // =========================
   // ADMIN / STAFF - CẬP NHẬT
   // =========================
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles( 'staff')
+  @Roles( 'staff', 'admin')
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateAppointmentDto: UpdateAppointmentDto,
+    @Req() req: any,
   ) {
+    const appointment = await this.appointmentsService.findOne(+id);
+
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    // Kiểm tra quyền: staff chỉ sửa được appointment của mình
+    if (req.user.role === 'staff' && appointment.staff?.id !== req.user.userId) {
+      throw new ForbiddenException('You can only update your own appointments');
+    }
+
     return this.appointmentsService.update(+id, updateAppointmentDto);
   }
 
@@ -126,7 +156,7 @@ async create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req) {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('customer')
   @Delete(':id')
-  remove(@Param('id') id: string, @Req() req) {
+  remove(@Param('id') id: string, @Req() req: any) {
     return this.appointmentsService.cancelByCustomer(+id, req.user.sub);
   }
 }
