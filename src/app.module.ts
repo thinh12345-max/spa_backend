@@ -9,6 +9,7 @@ import { AppointmentsModule } from './module/appointment.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AppointmentServicesModule } from './module/appointment_service.module';
+import { CustomersModule } from './module/customer.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AppointmentServicesModule } from './module/appointment_service.module';
     ServicesModule,
     AppointmentServicesModule,
     AppointmentsModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
