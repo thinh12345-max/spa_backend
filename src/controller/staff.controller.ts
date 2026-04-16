@@ -1,20 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
+import { StaffService } from '../service/staff.service';
+import { CreateStaffDto } from '../dto/staff/create_staff.dto';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/guards/roles.decorator';
-import { CreateStaffDto } from '../dto/staff/create_staff.dto';
 import { UpdateStaffDto } from '../dto/staff/update_staff.dto';
-import { StaffService } from '../service/staff.service';
 import { AppointmentsService } from '../service/appointments.service';
 import { UsersService } from '../service/users.service';
 import { ServicesService } from '../service/services.service';
-
+import { ParseIntPipe } from '@nestjs/common/pipes';
 
 @Controller('staff')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('STAFF')
 export class StaffController {
-  bookingsService: any;
   constructor(
     private readonly staffService: StaffService,
     private readonly appointmentService: AppointmentsService,
@@ -22,55 +30,97 @@ export class StaffController {
     private readonly servicesService: ServicesService,
   ) {}
 
+  // ===================== ADMIN ONLY =====================
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   create(@Body() createStaffDto: CreateStaffDto) {
     return this.staffService.create(createStaffDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Get()
+  findAll() {
+    return this.staffService.findAll();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: string) {
+    return this.staffService.remove(Number(id));
+  }
+
+  // ===================== ADMIN & STAFF (with check) =====================
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: string, @Req() req: any) {
+    const staff = await this.staffService.findOne(Number(id));
+
+    // Nếu là staff, chỉ được xem profile của chính mình
+    if (req.user.role === 'staff' && staff.user?.id !== req.user.userId) {
+      throw new ForbiddenException('You can only view your own staff profile');
+    }
+
+    return staff;
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
+  @Patch(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateStaffDto: UpdateStaffDto,
+    @Req() req: any,
+  ) {
+    const staff = await this.staffService.findOne(Number(id));
+
+    // Nếu là staff, chỉ được sửa profile của chính mình
+    if (req.user.role === 'staff' && staff.user?.id !== req.user.userId) {
+      throw new ForbiddenException('You can only update your own staff profile');
+    }
+
+    return this.staffService.update(Number(id), updateStaffDto);
+  }
+
+  // ===================== STAFF ONLY =====================
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('staff')
   @Get('schedule')
   getSchedule(@Req() req) {
-    return this.appointmentService.getStaffAppointments(req.user.sub);
+    return this.appointmentService.getStaffAppointments(req.user.userId);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('staff')
   @Get('appointments')
   getAppointments(@Req() req) {
-    return this.appointmentService.getStaffAppointments(req.user.sub);
+    return this.appointmentService.getStaffAppointments(req.user.userId);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('staff')
   @Get('services')
   getServices(@Req() req) {
-    return this.servicesService.getStaffServices(req.user.sub);
+    return this.servicesService.getStaffServices(req.user.userId);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('staff')
   @Get('customers')
   getCustomers(@Req() req) {
     return this.usersService.findAll();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('STAFF')
+  @Roles('staff')
   @Get('my-bookings')
-  findMyBookings(@Req() req) {  
-  return this.appointmentService.getStaffAppointments(req.user.sub);
-  }
-
-  @Get()
-  findAll() {
-    return this.staffService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.staffService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
-    return this.staffService.update(+id, updateStaffDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.staffService.remove(+id);
+  findMyBookings(@Req() req) {
+    return this.appointmentService.getStaffAppointments(req.user.userId);
   }
 }
