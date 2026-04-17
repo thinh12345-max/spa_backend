@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BookingsService } from '../service/bookings.service';
 import { CreateBookingDto } from '../dto/bookings/create_booking.dto';
 import { UpdateBookingDto } from '../dto/bookings/update_booking.dto';
