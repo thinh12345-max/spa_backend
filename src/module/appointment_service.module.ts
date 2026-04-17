@@ -9,6 +9,6 @@ import { AppointmentServicesService } from '../service/appointments_services.ser
   imports: [TypeOrmModule.forFeature([AppointmentService])],
   controllers: [AppointmentServicesController],
   providers: [AppointmentServicesService],
-  exports: [AppointmentServicesService],
+  exports: [AppointmentServicesService, TypeOrmModule],
 })
 export class AppointmentServicesModule {}

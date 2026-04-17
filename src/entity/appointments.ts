@@ -22,7 +22,7 @@ export class Appointment {
     appointment_time!: Date;
 
     @Column({ type: 'enum',
-        enum: ['pending', 'confirmed', 'completed', 'cancelled'],
+        enum: ['pending', 'confirmed', 'completed', 'in_progress', 'cancelled'],
         default: 'pending'
     })
     status!: string;

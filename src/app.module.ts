@@ -12,6 +12,8 @@ import { AppointmentServicesModule } from './module/appointment_service.module';
 import { CustomersModule } from './module/customer.module';
 import { StaffModule } from './module/staff.module';
 import { DashboardModule } from './module/dashboard.module';
+import { ProductsModule } from './module/product.module';
+
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { DashboardModule } from './module/dashboard.module';
     AppointmentServicesModule,
     AppointmentsModule,
     CustomersModule,
+    ProductsModule,
     StaffModule,
     DashboardModule,
   ],

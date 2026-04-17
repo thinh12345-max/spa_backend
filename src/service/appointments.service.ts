@@ -12,6 +12,34 @@ import { UpdateAppointmentDto } from '../dto/appointment/update_appointments.dto
 
 @Injectable()
 export class AppointmentsService {
+  async updateStatus(id: number, status: string, user: any) {
+    const appointment = await this.findOne(id);
+
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    // ===== ADMIN =====
+    if (user.role === 'admin') {
+      if (!['confirmed', 'cancelled'].includes(status)) {
+        throw new ForbiddenException('Invalid status for admin');
+      }
+    }
+
+    // ===== STAFF =====
+    if (user.role === 'staff') {
+      if (appointment.staff?.id !== user.userId) {
+        throw new ForbiddenException('Not your appointment');
+      }
+
+      if (!['in_progress', 'completed'].includes(status)) {
+        throw new ForbiddenException('Invalid status for staff');
+      }
+    }
+
+    appointment.status = status;
+    return this.appointmentRepository.save(appointment);
+  }
   constructor(
     @InjectRepository(Appointment)
     private readonly appointmentRepository: Repository<Appointment>,
@@ -79,7 +107,11 @@ export class AppointmentsService {
   }
 
   // ===================== STAFF =====================
-  async getStaffAppointments(staffId: number, page: number = 1, limit: number = 10) {
+  async getStaffAppointments(
+    staffId: number,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const skip = (page - 1) * limit;
     const [data, total] = await this.appointmentRepository.findAndCount({
       where: {
@@ -106,17 +138,27 @@ export class AppointmentsService {
 
   // ===================== CREATE (FIXED) =====================
   async create(dto: CreateAppointmentDto) {
-    return this.appointmentRepository.save({
+    if (!dto.staff_id) {
+      throw new NotFoundException('Staff không được để trống');
+    }
+
+    if (!dto.customer_id) {
+      throw new NotFoundException('Customer không được để trống');
+    }
+
+    const appointment = this.appointmentRepository.create({
       staff: { id: dto.staff_id },
       customer: { id: dto.customer_id },
       appointment_time: dto.appointment_time,
       note: dto.note,
       status: 'pending',
     });
+
+    return this.appointmentRepository.save(appointment);
   }
 
   // ===================== FIND ALL =====================
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(page: number, limit: number) {
     const skip = (page - 1) * limit;
     const [data, total] = await this.appointmentRepository.findAndCount({
       relations: ['customer', 'services', 'staff', 'services.service'],
