@@ -37,18 +37,18 @@ export class CustomersController {
   @Roles('customer')
   @Get('dashboard')
   async getDashboard(@Req() req: any) {
-    return this.customersService.getDashboard(req.user.sub);
+    return this.customersService.getDashboard(req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('customer')
   @Get('me')
   async getProfile(@Req() req: any) {
-    if (!req.user?.sub) {
+    if (!req.user?.userId) {
       throw new UnauthorizedException('User not authenticated');
     }
 
-    return this.customersService.findOne(Number(req.user.sub));
+    return this.customersService.findOne(Number(req.user.userId));
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -58,7 +58,7 @@ export class CustomersController {
     @Req() req: any,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ) {
-    return this.customersService.update(Number(req.user.sub), updateCustomerDto);
+    return this.customersService.update(Number(req.user.userId), updateCustomerDto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

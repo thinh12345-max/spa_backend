@@ -50,7 +50,7 @@ export class CustomersService {
 
   async update(id: number, updateCustomerDto: UpdateCustomerDto) {
     await this.customerRepository.update(id, updateCustomerDto);
-    await this.findOne(id); 
+    return await this.findOne(id);
   }
 
   async getDashboard(customerId: number) {

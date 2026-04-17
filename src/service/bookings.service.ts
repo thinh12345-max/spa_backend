@@ -24,7 +24,7 @@ export class BookingsService {
 
   findAll() {
     return this.bookingRepository.find({
-      relations: ['customer', 'staff', 'payments'],
+      relations: ['customer', 'staff', 'staff.user', 'payments'],
       order: { created_at: 'DESC' },
     });
   }
@@ -32,7 +32,7 @@ export class BookingsService {
   findOne(id: number) {
     return this.bookingRepository.findOne({
       where: { id },
-      relations: ['customer', 'staff', 'payments'],
+      relations: ['customer', 'staff', 'staff.user', 'payments'],
     });
   }
 

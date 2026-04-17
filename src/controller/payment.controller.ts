@@ -10,21 +10,29 @@ import { Roles } from '../common/guards/roles.decorator';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @Post()
   create(@Body() createPaymentDto: CreatePaymentDto) {
     return this.paymentsService.create(createPaymentDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @Get()
   findAll() {
     return this.paymentsService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('customer')
   @Get('my')
   findMy(@Req() req) {
-    return this.paymentsService.findByCustomer(req.user?.sub || 1); // Default to user ID 1 for testing
+    return this.paymentsService.findByCustomer(req.user.userId || 1);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.paymentsService.findOne(+id);
