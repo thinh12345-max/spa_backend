@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { StaffService } from '../service/staff.service';
 import { CreateStaffDto } from '../dto/staff/create_staff.dto';
@@ -42,8 +43,10 @@ export class StaffController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  findAll() {
-    return this.staffService.findAll();
+  async findAll(@Query() query: any) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    return this.staffService.findAll(page, limit);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

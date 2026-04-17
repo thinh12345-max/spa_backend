@@ -95,13 +95,16 @@ export class AppointmentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('staff', 'admin')
   @Get()
-  async findAll(@Req() req: any) {
+  async findAll(@Query() query: any, @Req() req: any) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+
     // Nếu là staff, chỉ trả về appointments của chính mình
     if (req.user.role === 'staff') {
-      return this.appointmentsService.getStaffAppointments(req.user.userId);
+      return this.appointmentsService.getStaffAppointments(req.user.userId, page, limit);
     }
     // Admin xem tất cả
-    return this.appointmentsService.findAll();
+    return this.appointmentsService.findAll(page, limit);
   }
 
   // =========================
