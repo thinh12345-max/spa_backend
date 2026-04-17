@@ -5,10 +5,10 @@ import { Service } from './services';
 @Entity('appointment_services')
 export class AppointmentService {
   
-  @PrimaryColumn()
+  @PrimaryColumn({type: 'bigint', unsigned: true})
   appointment_id!: number;
 
-  @PrimaryColumn()
+  @PrimaryColumn({type: 'bigint', unsigned: true})
   service_id!: number;
 
   @ManyToOne(() => Appointment, (a) => a.services)

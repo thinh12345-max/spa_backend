@@ -53,7 +53,7 @@ export class ServicesService {
   async getStaffServices(staffId: number): Promise<Service[]> {
     // Find all appointment_services for appointments of this staff
     const appointmentServices = await this.appointmentServiceRepository.find({
-      where: { appointment: { staff_id: staffId } },
+      where: { appointment: { staff: {id: staffId } } },
       relations: ['service'],
     });
 
