@@ -26,7 +26,7 @@ export class BookingsController {
     if (req.user.role === 'staff') {
       // Staff chỉ xem bookings của mình
       const allBookings = await this.bookingsService.findAll();
-      const staffBookings = allBookings.filter(booking => booking.staff?.id === req.user.userId);
+      const staffBookings = allBookings.filter(booking => booking.staff?.user?.id === req.user.userId);
       return staffBookings;
     }
     // Admin xem tất cả
@@ -45,7 +45,7 @@ export class BookingsController {
     }
 
     // Staff chỉ xem được booking của mình
-    if (req.user.role === 'staff' && booking.staff?.id !== req.user.userId) {
+    if (req.user.role === 'staff' && booking.staff?.user?.id !== req.user.userId) {
       throw new ForbiddenException('You can only view your own bookings');
     }
 
@@ -68,7 +68,7 @@ export class BookingsController {
     }
 
     // Staff chỉ sửa được booking của mình
-    if (req.user.role === 'staff' && booking.staff?.id !== req.user.userId) {
+    if (req.user.role === 'staff' && booking.staff?.user?.id !== req.user.userId) {
       throw new ForbiddenException('You can only update your own bookings');
     }
 

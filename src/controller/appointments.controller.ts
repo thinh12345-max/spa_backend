@@ -39,7 +39,7 @@ export class AppointmentsController {
   async create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req: any) {
   const dto: CreateAppointmentDto = {
     ...createAppointmentDto,
-    customer_id: req.user.sub,
+    customer_id: req.user.userId,
   };
 
   if (createAppointmentDto.date && createAppointmentDto.time) {
@@ -78,7 +78,7 @@ export class AppointmentsController {
   @Roles('customer')
   @Get('my')
   findMy(@Req() req: any) {
-    return this.appointmentsService.findByCustomer(req.user.sub);
+    return this.appointmentsService.findByCustomer(req.user.userId);
   }
 
   @Get('available-time')
@@ -160,6 +160,6 @@ export class AppointmentsController {
   @Roles('customer')
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: any) {
-    return this.appointmentsService.cancelByCustomer(+id, req.user.sub);
+    return this.appointmentsService.cancelByCustomer(+id, req.user.userId);
   }
 }

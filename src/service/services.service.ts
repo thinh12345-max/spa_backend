@@ -4,14 +4,16 @@ import { Repository } from 'typeorm';
 import { CreateServiceDto } from '../dto/services/create_service.dto';
 import { UpdateServiceDto } from '../dto/services/update_service.dto';
 import { Service } from '../entity/services';
-
+import { AppointmentService as AppointmentServiceEntity } from '../entity/appointments_service';
 
 @Injectable()
 export class ServicesService {
-  getStaffServices: any;
   constructor(
     @InjectRepository(Service)
     private readonly serviceRepository: Repository<Service>,
+
+    @InjectRepository(AppointmentServiceEntity)
+    private readonly appointmentServiceRepository: Repository<AppointmentServiceEntity>,
   ) {}
   create(createServiceDto: CreateServiceDto) {
     const service = this.serviceRepository.create(createServiceDto);
@@ -41,5 +43,28 @@ export class ServicesService {
     }
 
     return { message: 'Deleted successfully' };
+  }
+
+  // ===================== STAFF =====================
+  /**
+   * Get all distinct services offered by a specific staff member
+   * through their appointments.
+   */
+  async getStaffServices(staffId: number): Promise<Service[]> {
+    // Find all appointment_services for appointments of this staff
+    const appointmentServices = await this.appointmentServiceRepository.find({
+      where: { appointment: { staff_id: staffId } },
+      relations: ['service'],
+    });
+
+    // Extract unique services
+    const servicesMap = new Map<number, Service>();
+    appointmentServices.forEach(as => {
+      if (as.service) {
+        servicesMap.set(as.service.id, as.service);
+      }
+    });
+
+    return Array.from(servicesMap.values());
   }
 }
