@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Appointment } from "./appointments";
 import { Booking } from "./bookings";
 
@@ -11,6 +11,7 @@ export class Payment {
     amount!: number;
 
     @ManyToOne(() => Appointment, (appointment) => appointment.payments)
+    @JoinColumn({ name: 'appointment_id' })
     appointment!: Appointment;
 
     @ManyToOne(() => Booking, (booking) => booking.payments)

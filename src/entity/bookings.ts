@@ -1,7 +1,7 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { PrimaryGeneratedColumn } from "typeorm";
-import { Staff } from "./staff";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Payment } from "./payments";
+import { Customer } from "./customers";
+import { Staff } from "./staff";
 
 @Entity('bookings')
 export class Booking {
@@ -9,9 +9,13 @@ export class Booking {
   @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id!: number;
 
-  @ManyToOne('Customer')
+  @ManyToOne(() => Customer)
   @JoinColumn({ name: 'customers_id' })
-  customer: any;
+  customer!: Customer;
+
+  @ManyToOne(() => Staff)
+  @JoinColumn({ name: 'staffs_id' })
+  staff!: Staff;
 
   @OneToMany(() => Payment, (payment) => payment.booking)
   payments!: Payment[];
