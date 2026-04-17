@@ -11,6 +11,7 @@ import {
   Put,
   ParseIntPipe,
   UnauthorizedException,
+  Query,
 } from '@nestjs/common';
 import { CustomersService } from '../service/customers.service';
 import { CreateCustomerDto } from '../dto/customers/create_customers.dto';
@@ -63,8 +64,10 @@ export class CustomersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  async findAll() {
-    return this.customersService.findAll();
+  async findAll(@Query() query: any) {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    return this.customersService.findAll(page, limit);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

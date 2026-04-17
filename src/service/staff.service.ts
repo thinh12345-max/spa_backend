@@ -42,10 +42,24 @@ let user: User | null = null;
   }
 
   // ================= FIND ALL =================
-  findAll() {
-    return this.staffRepository.find({
+  async findAll(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.staffRepository.findAndCount({
+      skip,
+      take: limit,
       relations: ['user'],
+      order: { id: 'DESC' },
     });
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   // ================= FIND ONE =================

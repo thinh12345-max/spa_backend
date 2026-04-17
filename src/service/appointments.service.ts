@@ -79,8 +79,9 @@ export class AppointmentsService {
   }
 
   // ===================== STAFF =====================
-  async getStaffAppointments(staffId: number) {
-    return this.appointmentRepository.find({
+  async getStaffAppointments(staffId: number, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.appointmentRepository.findAndCount({
       where: {
         staff: { id: staffId },
       },
@@ -88,7 +89,19 @@ export class AppointmentsService {
       order: {
         appointment_time: 'DESC',
       },
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   // ===================== CREATE (FIXED) =====================
@@ -103,13 +116,26 @@ export class AppointmentsService {
   }
 
   // ===================== FIND ALL =====================
-  findAll() {
-    return this.appointmentRepository.find({
+  async findAll(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+    const [data, total] = await this.appointmentRepository.findAndCount({
       relations: ['customer', 'services', 'staff', 'services.service'],
       order: {
         appointment_time: 'DESC',
       },
+      skip,
+      take: limit,
     });
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   // ===================== FIND ONE =====================
