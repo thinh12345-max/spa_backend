@@ -14,17 +14,25 @@ export class BookingsService {
   ) {}
 
   async create(dto: CreateBookingDto) {
-    const booking = this.bookingRepository.create(dto);
+    const booking = this.bookingRepository.create({
+      ...dto,
+      customer: { id: dto.customers_id },
+      staff: { id: dto.staffs_id },
+    });
     return this.bookingRepository.save(booking);
   }
 
   findAll() {
-    return this.bookingRepository.find();
+    return this.bookingRepository.find({
+      relations: ['customer', 'staff', 'payments'],
+      order: { created_at: 'DESC' },
+    });
   }
 
   findOne(id: number) {
     return this.bookingRepository.findOne({
-      where: { id }
+      where: { id },
+      relations: ['customer', 'staff', 'payments'],
     });
   }
 
