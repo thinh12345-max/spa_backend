@@ -12,6 +12,13 @@ import { AppointmentServicesModule } from './module/appointment_service.module';
 import { CustomersModule } from './module/customer.module';
 import { StaffModule } from './module/staff.module';
 import { DashboardModule } from './module/dashboard.module';
+import { BookingsModule } from './module/bookings.module';
+import { PaymentsModule } from './module/payment.module';
+import { ProductsModule } from './module/product.module';
+import { ProductCategoriesModule } from './module/product_categories.module';
+import { ServiceCategoriesModule } from './module/service_categories.module';
+import { ReportsModule } from './module/report.module';
+import { SchedulesModule } from './module/schedule.module';
 
 @Module({
   imports: [
@@ -36,6 +43,13 @@ import { DashboardModule } from './module/dashboard.module';
     CustomersModule,
     StaffModule,
     DashboardModule,
+    BookingsModule,
+    PaymentsModule,
+    ProductsModule,
+    ProductCategoriesModule,
+    ServiceCategoriesModule,
+    ReportsModule,
+    SchedulesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

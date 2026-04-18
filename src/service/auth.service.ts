@@ -39,7 +39,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(
-      loginDto.username,
+      loginDto.email,
       loginDto.password
     );
 

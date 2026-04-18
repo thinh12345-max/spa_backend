@@ -60,7 +60,7 @@ export class StaffController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'staff')
-  @Get(':id') 
+  @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: string, @Req() req: any) {
     const staff = await this.staffService.findOne(Number(id));
 
