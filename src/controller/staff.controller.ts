@@ -154,17 +154,4 @@ export class StaffController {
     return this.appointmentService.getStaffAppointments(staff.id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'staff')
-  @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: string, @Req() req: any) {
-    const staff = await this.staffService.findByUserId(req.user.userId);
-
-    if (!staff) {
-      throw new NotFoundException('Staff not found');
-    }
-
-    return this.appointmentService.getStaffAppointments(staff.id);
-    return staff;
-  }
 }

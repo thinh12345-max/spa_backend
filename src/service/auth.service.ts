@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -18,31 +19,36 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, password: string) {
+  // 🔐 validate user
+  async validateUser(identifier: string, password: string) {
     const user = await this.usersRepository.findOne({
-      where: [{ username }, { email: username }],
+      where: [{ username: identifier }, { email: identifier }],
       relations: ['role'],
     });
 
     if (!user) {
-      throw new UnauthorizedException('sai username hoặc password');
+      throw new UnauthorizedException('Sai tài khoản hoặc mật khẩu');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      throw new UnauthorizedException('sai username hoặc password');
+      throw new UnauthorizedException('Sai tài khoản hoặc mật khẩu');
     }
 
     return user;
   }
 
+  // 🔑 LOGIN
   async login(loginDto: LoginDto) {
-    const user = await this.validateUser(
-      loginDto.email,
-      loginDto.password
-    );
-    const user = await this.validateUser(loginDto.username, loginDto.password);
+    const identifier = loginDto.username || loginDto.email;
+
+    // ❗ chặn trường hợp không gửi gì
+    if (!identifier) {
+      throw new BadRequestException('Phải nhập username hoặc email');
+    }
+
+    const user = await this.validateUser(identifier, loginDto.password);
 
     const payload = {
       sub: user.id,
@@ -50,10 +56,8 @@ export class AuthService {
       role: user.role.name,
     };
 
-    const token = this.jwtService.sign(payload);
-
     return {
-      access_token: token,
+      access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
         username: user.username,
@@ -62,7 +66,7 @@ export class AuthService {
     };
   }
 
-  // 🔥 API ME
+  // 👤 API ME
   async getMe(userId: number) {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
