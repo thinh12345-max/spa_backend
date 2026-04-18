@@ -61,6 +61,20 @@ export class StaffController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'staff')
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: string, @Req() req: any) {
+    const staff = await this.staffService.findOne(Number(id));
+
+    // Nếu là staff, chỉ được xem profile của chính mình
+    if (req.user.role === 'staff' && staff.user?.id !== req.user.userId) {
+      throw new ForbiddenException('You can only view your own staff profile');
+    }
+
+    return staff;
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: string,

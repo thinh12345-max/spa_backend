@@ -38,6 +38,10 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
+    const user = await this.validateUser(
+      loginDto.email,
+      loginDto.password
+    );
     const user = await this.validateUser(loginDto.username, loginDto.password);
 
     const payload = {
