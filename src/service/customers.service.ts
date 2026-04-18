@@ -7,6 +7,9 @@ import { UpdateCustomerDto } from '../dto/customers/update_customer.dto';
 
 @Injectable()
 export class CustomersService {
+  updateProfile(userId: any, dto: UpdateCustomerDto) {
+    throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
@@ -60,10 +63,17 @@ export class CustomersService {
     });
     return customer
       ? {
-      totalAppointments: customer.appointments?.length || 0,
-    }
+          totalAppointments: customer.appointments?.length || 0,
+        }
       : { totalAppointments: 0 };
   }
+
+async findByUserId(userId: number) {
+  return this.customerRepository.findOne({
+    where: { user: { id: userId } },
+    relations: ['user'],
+  });
+}
 
   async remove(id: number) {
     const result = await this.customerRepository.delete(id);

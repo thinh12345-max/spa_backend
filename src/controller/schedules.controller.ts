@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { CreateScheduleDto } from '../dto/schedules/create_schedule.dto';
 import { UpdateScheduleDto } from '../dto/schedules/update_schedule.dto';
 import { SchedulesService } from '../service/schedule.service';
@@ -6,7 +16,7 @@ import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/guards/roles.decorator';
 
-@Controller('schedules')
+@Controller('staff')
 export class SchedulesController {
   constructor(private readonly schedulesService: SchedulesService) {}
 
@@ -15,6 +25,13 @@ export class SchedulesController {
   @Post()
   create(@Body() createScheduleDto: CreateScheduleDto) {
     return this.schedulesService.create(createScheduleDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('staff')
+  @Get('schedule')
+  getSchedule(@Req() req) {
+    return this.schedulesService.getByStaff(req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -35,7 +52,11 @@ export class SchedulesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'staff')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateScheduleDto: UpdateScheduleDto, @Req() req: any) {
+  update(
+    @Param('id') id: string,
+    @Body() updateScheduleDto: UpdateScheduleDto,
+    @Req() req: any,
+  ) {
     return this.schedulesService.update(+id, updateScheduleDto);
   }
 

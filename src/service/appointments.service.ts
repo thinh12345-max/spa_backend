@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import dayjs from 'dayjs';
+import { Staff } from '../entity/staff';
 import { Appointment } from '../entity/appointments';
 import { CreateAppointmentDto } from '../dto/appointment/create_appointment.dto';
 import { UpdateAppointmentDto } from '../dto/appointment/update_appointments.dto';
@@ -43,8 +44,10 @@ export class AppointmentsService {
   constructor(
     @InjectRepository(Appointment)
     private readonly appointmentRepository: Repository<Appointment>,
-  ) {}
 
+    @InjectRepository(Staff)
+    private readonly staffRepository: Repository<Staff>,
+  ) {}
   // ===================== AVAILABLE TIME =====================
   async getAvailableTime(serviceId: number, date: string): Promise<string[]> {
     const allSlots = [
@@ -139,20 +142,19 @@ export class AppointmentsService {
   // ===================== CREATE (FIXED) =====================
   async create(dto: CreateAppointmentDto) {
     if (!dto.staff_id) {
-      throw new NotFoundException('Staff không được để trống');
+      const staff = await this.staffRepository.find({
+        take: 1,
+      });
+
+      dto.staff_id = staff[0]?.id;
     }
 
-    if (!dto.customer_id) {
-      throw new NotFoundException('Customer không được để trống');
+    // ❗ nếu vẫn null thì báo lỗi
+    if (!dto.staff_id) {
+      throw new NotFoundException('Không có staff nào trong hệ thống');
     }
 
-    const appointment = this.appointmentRepository.create({
-      staff: { id: dto.staff_id },
-      customer: { id: dto.customer_id },
-      appointment_time: dto.appointment_time,
-      note: dto.note,
-      status: 'pending',
-    });
+    const appointment = this.appointmentRepository.create(dto);
 
     return this.appointmentRepository.save(appointment);
   }

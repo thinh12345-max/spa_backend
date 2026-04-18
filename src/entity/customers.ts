@@ -1,41 +1,54 @@
-import { Booking } from "../entity/bookings";
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Booking } from '../entity/bookings';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from '../entity/users';
 
 @Entity('customers')
 export class Customer {
-    @PrimaryGeneratedColumn({ type: 'bigint',unsigned: true })
-    id!: number;
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
+  id!: number;
 
-    @Column()
-    full_name!: string;
+  @Column()
+  full_name!: string;
 
-    @Column({ nullable: true })
-    phone?: string;
+  @Column({ nullable: true })
+  phone?: string;
 
-    @Column({ nullable: true })
-    email?: string;
+  @Column({ nullable: true })
+  email?: string;
 
-    @Column({ type: 'date', nullable: true })
-    birthday?: Date;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
 
-    @Column({
-        type: 'enum',
-        enum: ['male', 'female', 'other']
-    })
-    gender!: string;
+  @Column({ type: 'date', nullable: true })
+  birthday?: Date;
 
-    @Column({ type: 'text', nullable: true })
-    address?: string;
+  @Column({
+    type: 'enum',
+    enum: ['male', 'female', 'other'],
+  })
+  gender!: string;
 
-    @Column({ default: 0 })
-    loyalty_points!: number;
+  @Column({ type: 'text', nullable: true })
+  address?: string;
 
-    @CreateDateColumn()
-    created_at!: Date;
+  @Column({ default: 0 })
+  loyalty_points!: number;
 
-    @OneToMany('Booking', (booking: any) => booking.customer)
-    bookings!: any[];
+  @CreateDateColumn()
+  created_at!: Date;
 
-    @OneToMany('Appointment', (appointment: any) => appointment.customer)
-    appointments!: any[];
+  @OneToMany('Booking', (booking: any) => booking.customer)
+  bookings!: any[];
+
+  @OneToMany('Appointment', (appointment: any) => appointment.customer)
+  appointments!: any[];
 }

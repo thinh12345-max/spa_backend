@@ -10,6 +10,7 @@ import {
   Req,
   ForbiddenException,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { StaffService } from '../service/staff.service';
 import { CreateStaffDto } from '../dto/staff/create_staff.dto';
@@ -60,20 +61,6 @@ export class StaffController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'staff')
-  @Get(':id') 
-  async findOne(@Param('id', ParseIntPipe) id: string, @Req() req: any) {
-    const staff = await this.staffService.findOne(Number(id));
-
-    // Nếu là staff, chỉ được xem profile của chính mình
-    if (req.user.role === 'staff' && staff.user?.id !== req.user.userId) {
-      throw new ForbiddenException('You can only view your own staff profile');
-    }
-
-    return staff;
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'staff')
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: string,
@@ -84,7 +71,9 @@ export class StaffController {
 
     // Nếu là staff, chỉ được sửa profile của chính mình
     if (req.user.role === 'staff' && staff.user?.id !== req.user.userId) {
-      throw new ForbiddenException('You can only update your own staff profile');
+      throw new ForbiddenException(
+        'You can only update your own staff profile',
+      );
     }
 
     return this.staffService.update(Number(id), updateStaffDto);
@@ -95,35 +84,73 @@ export class StaffController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('staff')
   @Get('schedule')
-  getSchedule(@Req() req) {
-    return this.appointmentService.getStaffAppointments(req.user.userId);
+  async getSchedule(@Req() req) {
+    const staff = await this.staffService.findByUserId(req.user.userId);
+
+    if (!staff) {
+      throw new NotFoundException('Staff not found');
+    }
+
+    return this.appointmentService.getStaffAppointments(staff.id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('staff')
   @Get('appointments')
-  getAppointments(@Req() req) {
-    return this.appointmentService.getStaffAppointments(req.user.userId);
+  async getAppointments(@Req() req) {
+    const staff = await this.staffService.findByUserId(req.user.userId);
+
+    if (!staff) {
+      throw new ForbiddenException('Staff not found');
+    }
+
+    return this.appointmentService.getStaffAppointments(staff.id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('staff')
   @Get('services')
-  getServices(@Req() req) {
-    return this.servicesService.getStaffServices(req.user.userId);
+  async getServices(@Req() req) {
+    const staff = await this.staffService.findByUserId(req.user.userId);
+
+    if (!staff) {
+      throw new ForbiddenException('Staff not found');
+    }
+
+    return this.servicesService.getStaffServices(staff.id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('staff')
   @Get('customers')
   getCustomers(@Req() req) {
-    return this.usersService.findAll();
+    return this.usersService.findByRole('customer');
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('staff')
   @Get('my-bookings')
-  findMyBookings(@Req() req) {
-    return this.appointmentService.getStaffAppointments(req.user.userId);
+  async findMyBookings(@Req() req) {
+    const staff = await this.staffService.findByUserId(req.user.userId);
+
+    if (!staff) {
+      throw new ForbiddenException('Staff not found');
+    }
+
+    return this.appointmentService.getStaffAppointments(staff.id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: string, @Req() req: any) {
+    const staff = await this.staffService.findByUserId(req.user.userId);
+
+    if (!staff) {
+      throw new NotFoundException('Staff not found');
+    }
+
+    return this.appointmentService.getStaffAppointments(staff.id);
+    return staff;
   }
 }
