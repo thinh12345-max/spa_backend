@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ReportsService } from '../service/report.service';
 import { CreateReportDto } from '../dto/reports/create_report.dto';
 import { UpdateReportDto } from '../dto/reports/update_report.dto';
@@ -48,7 +59,10 @@ export class ReportsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateReportDto: UpdateReportDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateReportDto: UpdateReportDto,
+  ) {
     return this.reportsService.update(+id, updateReportDto);
   }
 
@@ -57,5 +71,10 @@ export class ReportsController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.reportsService.remove(+id);
+  }
+
+  @Post('seed') 
+  async seedReports() {
+    return this.reportsService.seedReports();
   }
 }

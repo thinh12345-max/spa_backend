@@ -36,40 +36,54 @@ export class AppointmentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('customer')
   @Post()
-  async create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req: any) {
-  const dto: CreateAppointmentDto = {
-    ...createAppointmentDto,
-    customer_id: req.user.userId,
-  };
+  async create(
+    @Body() createAppointmentDto: CreateAppointmentDto,
+    @Req() req: any,
+  ) {
+    const dto: CreateAppointmentDto = {
+      ...createAppointmentDto,
+      customer_id: req.user.userId,
+    };
 
-  if (createAppointmentDto.date && createAppointmentDto.time) {
-    dto.appointment_time = dayjs(
-      `${createAppointmentDto.date} ${createAppointmentDto.time}`,
-    ).toDate();
-  }
-
-  const appointment = await this.appointmentsService.create(dto);
-
-  if (createAppointmentDto.service_id) {
-    const service = await this.servicesService.findOne(
-      createAppointmentDto.service_id,
-    );
-
-    if (service) {
-      await this.appointmentServicesService.create({
-        appointment_id: appointment.id,
-        service_id: service.id,
-        price_at_time: Number(service.price),
-        quantity: 1,
-      });
+    if (createAppointmentDto.date && createAppointmentDto.time) {
+      dto.appointment_time = dayjs(
+        `${createAppointmentDto.date} ${createAppointmentDto.time}`,
+      ).toDate();
     }
+
+    const appointment = await this.appointmentsService.create(dto);
+
+    if (createAppointmentDto.service_id) {
+      const service = await this.servicesService.findOne(
+        createAppointmentDto.service_id,
+      );
+
+      if (service) {
+        await this.appointmentServicesService.create({
+          appointment_id: appointment.id,
+          service_id: service.id,
+          price_at_time: Number(service.price),
+          quantity: 1,
+        });
+      }
+    }
+
+    return {
+      message: 'Tạo lịch hẹn thành công',
+      data: appointment,
+    };
   }
 
-  return {
-    message: 'Tạo lịch hẹn thành công',
-    data: appointment,
-  };
-}
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: string,
+    @Req() req: any,
+  ) {
+    return this.appointmentsService.updateStatus(+id, status, req.user);
+  }
 
   // =========================
   // CUSTOMER - XEM LỊCH HẸN CỦA TÔI
@@ -101,7 +115,11 @@ export class AppointmentsController {
 
     // Nếu là staff, chỉ trả về appointments của chính mình
     if (req.user.role === 'staff') {
-      return this.appointmentsService.getStaffAppointments(req.user.userId, page, limit);
+      return this.appointmentsService.getStaffAppointments(
+        req.user.userId,
+        page,
+        limit,
+      );
     }
     // Admin xem tất cả
     return this.appointmentsService.findAll(page, limit);
@@ -111,7 +129,7 @@ export class AppointmentsController {
   // ADMIN / STAFF - XEM CHI TIẾT
   // =========================
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles( 'staff', 'admin')
+  @Roles('staff', 'admin')
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() req: any) {
     const appointment = await this.appointmentsService.findOne(+id);
@@ -121,7 +139,10 @@ export class AppointmentsController {
     }
 
     // Kiểm tra quyền: staff chỉ xem được appointment của mình
-    if (req.user.role === 'staff' && appointment.staff?.id !== req.user.userId) {
+    if (
+      req.user.role === 'staff' &&
+      appointment.staff?.id !== req.user.userId
+    ) {
       throw new ForbiddenException('You can only view your own appointments');
     }
 
@@ -132,7 +153,7 @@ export class AppointmentsController {
   // ADMIN / STAFF - CẬP NHẬT
   // =========================
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles( 'staff', 'admin')
+  @Roles('staff', 'admin')
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -146,7 +167,10 @@ export class AppointmentsController {
     }
 
     // Kiểm tra quyền: staff chỉ sửa được appointment của mình
-    if (req.user.role === 'staff' && appointment.staff?.id !== req.user.userId) {
+    if (
+      req.user.role === 'staff' &&
+      appointment.staff?.id !== req.user.userId
+    ) {
       throw new ForbiddenException('You can only update your own appointments');
     }
 

@@ -7,7 +7,13 @@ import { ServicesService } from '../service/services.service';
 import { AppointmentService } from '../entity/appointments_service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Service, ServiceCategory, AppointmentService])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Service,
+      ServiceCategory,
+      AppointmentService
+    ]),
+  ],
   controllers: [ServicesController],
   providers: [ServicesService],
   exports: [ServicesService],

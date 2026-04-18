@@ -4,8 +4,10 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Role } from '../entity/role';
+import { Staff } from './staff';
 
 @Entity('users')
 export class User {
@@ -21,18 +23,19 @@ export class User {
   @Column()
   password!: string;
 
-  // Cột khóa ngoại thật trong DB
   @Column()
   role_id!: number;
+
+  @OneToMany(() => Staff, (staff) => staff.user)
+  staffs!: Staff[];
 
   // Quan hệ tới bảng roles
   @ManyToOne(() => Role, (role) => role.users, {
     nullable: false,
-    cascade: false, // ❌ tuyệt đối không cascade ở đây
+    cascade: false,
     eager: false,
   })
   @JoinColumn({ name: 'role_id' })
   role!: Role;
-    appointments: any;
-    staffs: any;
+  appointments: any;
 }

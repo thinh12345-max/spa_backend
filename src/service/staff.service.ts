@@ -6,7 +6,6 @@ import { CreateStaffDto } from '../dto/staff/create_staff.dto';
 import { UpdateStaffDto } from '../dto/staff/update_staff.dto';
 import { Staff } from '../entity/staff';
 
-
 @Injectable()
 export class StaffService {
   constructor(
@@ -21,7 +20,7 @@ export class StaffService {
   async create(createStaffDto: CreateStaffDto) {
     const { users_id, ...staffData } = createStaffDto;
 
-let user: User | null = null;
+    let user: User | null = null;
 
     if (users_id) {
       user = await this.userRepository.findOne({
@@ -74,6 +73,15 @@ let user: User | null = null;
     }
 
     return staff;
+  }
+
+  async findByUserId(userId: number) {
+    return this.staffRepository.findOne({
+      where: {
+        user: { id: userId },
+      },
+      relations: ['user'],
+    });
   }
 
   // ================= UPDATE =================

@@ -1,14 +1,17 @@
-import { Injectable, UnauthorizedException, NotFoundException } from "@nestjs/common";
-import * as bcrypt from "bcrypt";
-import { JwtService } from "@nestjs/jwt";
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "../entity/users";
-import { Repository } from "typeorm";
-import { LoginDto } from "../dto/auth/login.dto";
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../entity/users';
+import { Repository } from 'typeorm';
+import { LoginDto } from '../dto/auth/login.dto';
 
 @Injectable()
 export class AuthService {
-
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -17,21 +20,18 @@ export class AuthService {
 
   async validateUser(username: string, password: string) {
     const user = await this.usersRepository.findOne({
-      where: [
-        { username },
-        { email: username }
-      ],
-      relations: ["role"]
+      where: [{ username }, { email: username }],
+      relations: ['role'],
     });
 
     if (!user) {
-      throw new UnauthorizedException("sai username hoặc password");
+      throw new UnauthorizedException('sai username hoặc password');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      throw new UnauthorizedException("sai username hoặc password");
+      throw new UnauthorizedException('sai username hoặc password');
     }
 
     return user;
@@ -42,6 +42,7 @@ export class AuthService {
       loginDto.email,
       loginDto.password
     );
+    const user = await this.validateUser(loginDto.username, loginDto.password);
 
     const payload = {
       sub: user.id,
@@ -57,7 +58,7 @@ export class AuthService {
         id: user.id,
         username: user.username,
         role: user.role.name,
-      }
+      },
     };
   }
 

@@ -12,6 +12,7 @@ import {
   ParseIntPipe,
   UnauthorizedException,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { CustomersService } from '../service/customers.service';
 import { CreateCustomerDto } from '../dto/customers/create_customers.dto';
@@ -48,18 +49,20 @@ export class CustomersController {
       throw new UnauthorizedException('User not authenticated');
     }
 
-    return this.customersService.findOne(Number(req.user.userId));
+    return this.customersService.findByUserId(req.user.userId);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('customer')
-  @Put('me')
-  async updateProfile(
-    @Req() req: any,
-    @Body() updateCustomerDto: UpdateCustomerDto,
-  ) {
-    return this.customersService.update(Number(req.user.userId), updateCustomerDto);
+ @UseGuards(JwtAuthGuard)
+@Put('me')
+updateProfile(@Req() req, @Body() dto: UpdateCustomerDto) {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    throw new UnauthorizedException('Missing user in request');
   }
+
+  return this.customersService.updateProfile(userId, dto);
+}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')

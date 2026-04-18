@@ -1,42 +1,40 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, } from "typeorm";
-import { PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { PrimaryGeneratedColumn } from 'typeorm';
 import { Appointment } from './appointments';
-import { User } from "./users";
-import { Booking } from "./bookings";
+import { User } from './users';
+import { Booking } from './bookings';
+import { Schedule } from './schedule';
 
-@Entity ('staffs')
+@Entity('staffs')
 export class Staff {
-    @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
-    id!: number;
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
+  id!: number;
 
-    @Column({ unique: true })
-    email!: string;
+  @Column({ unique: true })
+  email!: string;
 
-    @ManyToOne(() => User, (user) => user.staffs, {
-    nullable: true,
-    onDelete: 'SET NULL',
-})
-    @JoinColumn({ name: 'users_id' })
-    user?: User;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'users_id' }) 
+  user!: User;
 
-    @OneToMany(() => Appointment, (appointment) => appointment.staff)
-    appointments!: Appointment[];
+  @OneToMany(() => Schedule, (schedule) => schedule.staff)
+  schedules!: Schedule[];
 
-    @Column()
-    full_name!: string;
+  @OneToMany(() => Appointment, (appointment) => appointment.staff)
+  appointments!: Appointment[];
 
-    @Column({ nullable: true })
-    phone!: string;
+  @Column()
+  full_name!: string;
 
-    @Column({ nullable: true })
-    position!: string;
+  @Column({ nullable: true })
+  phone!: string;
 
-    @Column('decimal', { precision: 12, scale: 2, default: 0})
-    salary!: number;
+  @Column({ nullable: true })
+  position!: string;
 
-    @Column({ type: 'enum',
-        enum: ['active', 'inactive'],
-        default: 'active' 
-    })
-    status!: string;
+  @Column('decimal', { precision: 12, scale: 2, default: 0 })
+  salary!: number;
+
+  @Column({ type: 'enum', enum: ['active', 'inactive'], default: 'active' })
+  status!: string;
 }

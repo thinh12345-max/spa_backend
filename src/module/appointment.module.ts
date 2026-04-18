@@ -12,7 +12,7 @@ import { RolesModule } from './role.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Appointment]),
+    TypeOrmModule.forFeature([Appointment, Staff]),
     ServicesModule,
     AppointmentServicesModule,
     User,

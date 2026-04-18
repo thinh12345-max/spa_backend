@@ -1,13 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm'; 
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateScheduleDto } from '../dto/schedules/create_schedule.dto';
 import { UpdateScheduleDto } from '../dto/schedules/update_schedule.dto';
 import { Schedule } from '../entity/schedule';
 
-
 @Injectable()
 export class SchedulesService {
+  async getByStaff(userId: number) {
+    return this.scheduleRepository.find({
+      relations: ['staff', 'staff.user'],
+      where: {
+        staff: {
+          user: {
+            id: userId,
+          },
+        },
+      },
+    });
+  }
   constructor(
     @InjectRepository(Schedule)
     private readonly scheduleRepository: Repository<Schedule>,

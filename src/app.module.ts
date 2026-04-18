@@ -20,6 +20,7 @@ import { ServiceCategoriesModule } from './module/service_categories.module';
 import { ReportsModule } from './module/report.module';
 import { SchedulesModule } from './module/schedule.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -41,6 +42,9 @@ import { SchedulesModule } from './module/schedule.module';
     AppointmentServicesModule,
     AppointmentsModule,
     CustomersModule,
+    PaymentsModule,
+    ReportsModule,
+    ProductsModule,
     StaffModule,
     DashboardModule,
     BookingsModule,

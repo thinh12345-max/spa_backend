@@ -14,6 +14,16 @@ import { RegisterDto } from '../dto/auth/register.dto';
 
 @Injectable()
 export class UsersService {
+  findByRole(roleName: string) {
+    return this.userRepository.find({
+      where: {
+        role: {
+          name: roleName,
+        },
+      },
+      relations: ['role'],
+    });
+  }
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
